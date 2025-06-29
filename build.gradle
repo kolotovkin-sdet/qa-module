@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+    id 'io.freefair.lombok'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+    options.deprecation = true
+    options.compilerArgs << "-Xlint:deprecation" << "-Xlint:unchecked"
+    options.compilerArgs.add("-parameters")
+}
+
+wrapper {
+    gradleVersion = libs.versions.gradle.wrapper.get()
+}
