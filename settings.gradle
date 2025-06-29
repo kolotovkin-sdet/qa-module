@@ -10,10 +10,21 @@ pluginManagement {
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
+        maven {
+            name = "GitHubPackages"
+            url "https://maven.pkg.github.com/kolotovkin-sdet/qa-library"
+            credentials(PasswordCredentials)
+        }
     }
     versionCatalogs {
         libs {
+            version("qa-library", "0.1.0-ci-cd-SNAPSHOT")
             version('gradle-wrapper', '8.13')
+
+            library("bom", "com.qa.atlibs", "qa-lib-bom").versionRef("qa-library")
+            library("core", "com.qa.atlibs", "qa-lib-core").versionRef("qa-library")
+            library("grpc", "com.qa.atlibs", "qa-lib-grpc").versionRef("qa-library")
+            library("rest", "com.qa.atlibs", "qa-lib-rest").versionRef("qa-library")
         }
     }
 }

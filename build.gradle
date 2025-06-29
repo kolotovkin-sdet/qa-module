@@ -3,6 +3,19 @@ plugins {
     id 'io.freefair.lombok'
 }
 
+dependencies {
+    implementation(
+            platform(libs.bom),
+            libs.core,
+            libs.grpc,
+            libs.rest
+    )
+}
+
+configurations.configureEach {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = 21
