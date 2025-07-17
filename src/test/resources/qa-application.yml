@@ -1,0 +1,19 @@
+env:
+  default:
+    apps:
+      your-rest-app:
+        host: http://localhost
+        port: 8080
+        type: rest
+        isEnabled: false
+      your-grpc-app:
+        host: grpcb.in
+        port: 9000
+        type: grpc
+        isEnabled: true
+    test-data-dir: testdata
+    mock:
+      host: http://localhost
+      port: 8080
+      isEnabled: true
+      stubs-path: src/test/resources/stubs

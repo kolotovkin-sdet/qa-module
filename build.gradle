@@ -1,6 +1,25 @@
 plugins {
     id 'java'
     id 'io.freefair.lombok'
+    id 'com.google.protobuf'
+}
+
+test {
+    useJUnitPlatform {
+        includeTags 'qa-module'
+        testLogging {
+            events 'passed', 'skipped', 'failed'
+            exceptionFormat "full"
+        }
+    }
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDirs += "contracts"
+        }
+    }
 }
 
 dependencies {
@@ -14,6 +33,33 @@ dependencies {
 
 configurations.configureEach {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+protobuf {
+    protoc {
+        artifact = libs.protoc.get()
+    }
+    plugins {
+        grpc {
+            artifact = libs.protocgen.get()
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {
+                option 'jakarta_omit'
+                option '@generated=omit'
+            }
+        }
+        all().configureEach { task ->
+            task.generateDescriptorSet = true
+            task.descriptorSetOptions.path =
+                    "${projectDir}/src/test/resources/testdata/stub/grpc/${task.sourceSet.name}.dsc"
+            task.descriptorSetOptions.includeSourceInfo = true
+            task.descriptorSetOptions.includeImports = true
+            task.finalizedBy('processTestResources')
+        }
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {

@@ -4,11 +4,13 @@ pluginManagement {
     }
     plugins {
         id "io.freefair.lombok" version "8.13.1"
+        id "com.google.protobuf" version "0.9.5"
     }
 }
 
 dependencyResolutionManagement {
     repositories {
+        mavenLocal()
         mavenCentral()
         maven {
             name = "GitHubPackages"
@@ -20,11 +22,17 @@ dependencyResolutionManagement {
         libs {
             version("qa-library", "0.1.0-ci-cd-SNAPSHOT")
             version('gradle-wrapper', '8.13')
+            version("protoc", "3.25.5")
+            version("protoc-gen", "1.69.0")
 
             library("bom", "com.qa.atlibs", "qa-lib-bom").versionRef("qa-library")
             library("core", "com.qa.atlibs", "qa-lib-core").versionRef("qa-library")
             library("grpc", "com.qa.atlibs", "qa-lib-grpc").versionRef("qa-library")
             library("rest", "com.qa.atlibs", "qa-lib-rest").versionRef("qa-library")
+
+            library('protoc', 'com.google.protobuf', 'protoc').versionRef('protoc')
+            library("protocgen", "io.grpc", "protoc-gen-grpc-java").versionRef("protoc-gen")
+
         }
     }
 }
