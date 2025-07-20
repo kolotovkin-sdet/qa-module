@@ -1,29 +1,29 @@
 package com.qa.features;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-
-import com.google.protobuf.Message;
 import com.qa.atlibs.grpc.manager.GrpcManager;
 import com.qa.atlibs.grpc.steps.GrpcSteps;
 import hello.Hello;
 import hello.HelloServiceGrpc;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 @Tag("qa-module")
 public class GrpcTests {
 
     HelloServiceGrpc.HelloServiceBlockingStub stub
-            = HelloServiceGrpc.newBlockingStub(GrpcManager.getGrpcChannel("your-grpc-app"));
+            = HelloServiceGrpc.newBlockingStub(GrpcManager.getGrpcChannel("postman-grpcb-in"));
+    HelloServiceGrpc.HelloServiceStub asyncStub
+            = HelloServiceGrpc.newStub(GrpcManager.getGrpcChannel("postman-grpcb-in"));
 
     @ParameterizedTest
-    @ValueSource(strings = {"Ilya", "null"})
-    void demoTest_unaryRequest(String name) throws InvalidProtocolBufferException {
+    @ValueSource(strings = {"Ilya", "Billy"})
+    void demoTest_unaryRequest(String name) {
         GrpcSteps.prepareRequest(Hello.HelloRequest.class)
                 .jsonBodyForRequestIs("unary-request-body.json")
                 .metadataForRequestAre(Map.of("testKey", "testValue"))
@@ -35,42 +35,50 @@ public class GrpcTests {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Ilya", "null"})
-    void demoTest_ServiceStreamingRequest(String name) throws InvalidProtocolBufferException {
-        GrpcSteps.prepareRequest(Hello.HelloRequest.class)
-                .jsonBodyForRequestIs("unary-request-body.json")
+    @ValueSource(strings = {"Ilya", "Billy"})
+    void demoTest_ServiceStreamingRequest(String name) {
+        GrpcSteps.<Hello.HelloRequest, Hello.HelloResponse>prepareRequest(Hello.HelloRequest.class)
+                .jsonBodyForRequestIs("ss-request-body.json")
                 .metadataForRequestAre(Map.of("testKey", "testValue"))
-                .<Hello.HelloRequest, Hello.HelloResponse>sendGrpcServiceStreamingRequest(req -> stub.lotsOfReplies(req))
-                .jsonResponseIs("unary-response-body.json")
+                .sendGrpcServiceStreamingRequest(stub::lotsOfReplies)
+                .streamingResponseQtyIs(10)
+                .jsonResponsesAre(Collections.nCopies(10, "ss-response-body.json"))
                 .responseMetadataIs(Map.of(
                         "content-type", "application/grpc"
                 ));
     }
 
-//    @ParameterizedTest
-//    @ValueSource(strings = {"Ilya", "null"})
-//    void demoTest_ClientStreaming(String name) throws InvalidProtocolBufferException {
-//        GrpcSteps.prepareRequest(Hello.HelloRequest.class)
-//                .jsonBodyForRequestIs("unary-request-body.json")
-//                .metadataForRequestAre(Map.of("testKey", "testValue"))
-//                .sendGrpcClientStreamingRequest(stub::lotsOfGreetings)
-//                .jsonResponseIs("unary-response-body.json")
-//                .responseMetadataIs(Map.of(
-//                        "content-type", "application/grpc"
-//                ));
-//    }
-//
-//    @ParameterizedTest
-//    @ValueSource(strings = {"Ilya", "null"})
-//    void demoTest_BidirectionalStreaming(String name) throws InvalidProtocolBufferException {
-//        GrpcSteps.prepareRequest(Hello.HelloRequest.class)
-//                .jsonBodyForRequestIs("unary-request-body.json")
-//                .metadataForRequestAre(Map.of("testKey", "testValue"))
-//                .sendGrpcBidirectionalStreamingRequest(stub::BidiHello)
-//                .jsonResponseIs("unary-response-body.json")
-//                .responseMetadataIs(Map.of(
-//                        "content-type", "application/grpc"
-//                ));
-//    }
+    @ParameterizedTest
+    @CsvSource({"Ilya,Kolotovkin", "Billy,Harrington"})
+    void demoTest_ClientStreaming(String nameOne, String nameTwo) {
+        GrpcSteps.<Hello.HelloRequest, Hello.HelloResponse>prepareRequest(Hello.HelloRequest.class)
+                .jsonBodiesForRequestAre(List.of(
+                        "cs-request-body-1.json",
+                        "cs-request-body-2.json"))
+                .metadataForRequestAre(Map.of("testKey", "testValue"))
+                .sendGrpcClientStreamingRequest(asyncStub::lotsOfGreetings)
+                .jsonResponseIs("cs-response-body.json")
+                .responseMetadataIs(Map.of(
+                        "content-type", "application/grpc"
+                ));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"Ilya,Kolotovkin", "Billy,Harrington"})
+    void demoTest_BidirectionalStreaming(String nameOne, String nameTwo) {
+        GrpcSteps.<Hello.HelloRequest, Hello.HelloResponse>prepareRequest(Hello.HelloRequest.class)
+                .jsonBodiesForRequestAre(List.of(
+                        "bds-request-body-1.json",
+                        "bds-request-body-2.json"))
+                .metadataForRequestAre(Map.of("testKey", "testValue"))
+                .sendGrpcBidirectionalStreamingRequest(asyncStub::bidiHello)
+                .streamingResponseQtyIs(2)
+                .jsonResponsesAre(List.of(
+                        "bds-response-body-1.json",
+                        "bds-response-body-2.json"))
+                .responseMetadataIs(Map.of(
+                        "content-type", "application/grpc"
+                ));
+    }
 
 }
