@@ -33,6 +33,7 @@ dependencyResolutionManagement {
             library('protoc', 'com.google.protobuf', 'protoc').versionRef('protoc')
             library("protocgen", "io.grpc", "protoc-gen-grpc-java").versionRef("protoc-gen")
 
+            bundle('atlibs', ['core', 'grpc', 'rest'])
         }
     }
 }
